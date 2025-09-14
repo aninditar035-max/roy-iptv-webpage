@@ -43,11 +43,11 @@
     <!-- Navigation -->
     <div class="absolute top-0 left-0 p-4 z-20">
         <div class="relative">
-            <button id="menu-toggle-btn" class="cursor-pointer">
+            <input type="checkbox" id="menu-toggle" class="peer hidden">
+            <label for="menu-toggle" id="menu-toggle-label" class="cursor-pointer">
                 <svg class="w-8 h-8 text-slate-400 hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-            </button>
-
-            <div id="menu" class="hidden absolute left-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-lg py-2 border border-slate-700">
+            </label>
+            <div id="menu" class="hidden peer-checked:block absolute left-0 mt-2 w-48 bg-slate-800 rounded-lg shadow-lg py-2 border border-slate-700">
                 <a href="http://admin.nexavision.co.in/" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Admin Login</a>
                 <a href="http://operator.nexavision.co.in/" target="_blank" rel="noopener noreferrer" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">Operator Login</a>
                 <button id="aboutUsBtn" class="w-full text-left block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white">About Us</button>
@@ -182,7 +182,8 @@
             const aboutUsBtn = document.getElementById('aboutUsBtn');
             const aboutUsModal = document.getElementById('aboutUsModal');
             const closeModalBtn = document.getElementById('closeModalBtn');
-            const menuToggleBtn = document.getElementById('menu-toggle-btn');
+            const menuToggle = document.getElementById('menu-toggle');
+            const menuToggleLabel = document.getElementById('menu-toggle-label');
             const menu = document.getElementById('menu');
 
             generateTextBtn.addEventListener('click', () => {
@@ -201,14 +202,9 @@
 
             // --- Menu and Modal Logic ---
 
-            menuToggleBtn.addEventListener('click', (e) => {
-                e.stopPropagation(); // Prevents the document click listener from firing right away
-                menu.classList.toggle('hidden');
-            });
-
             aboutUsBtn.addEventListener('click', () => {
                 aboutUsModal.classList.remove('hidden');
-                menu.classList.add('hidden'); // Close menu when modal opens
+                menuToggle.checked = false; // Close menu when modal opens
             });
 
             closeModalBtn.addEventListener('click', () => {
@@ -226,17 +222,17 @@
                 if (e.key === 'Escape') {
                     if (!aboutUsModal.classList.contains('hidden')) {
                         aboutUsModal.classList.add('hidden');
-                    } else if (!menu.classList.contains('hidden')) {
-                        menu.classList.add('hidden');
+                    } else if (menuToggle.checked) {
+                        menuToggle.checked = false;
                     }
                 }
             });
 
             // Close menu when clicking outside of it
             document.addEventListener('click', (e) => {
-                if (!menu.contains(e.target) && !menuToggleBtn.contains(e.target)) {
-                    if (!menu.classList.contains('hidden')) {
-                        menu.classList.add('hidden');
+                if (!menu.contains(e.target) && !menuToggleLabel.contains(e.target)) {
+                    if (menuToggle.checked) {
+                        menuToggle.checked = false;
                     }
                 }
             });
