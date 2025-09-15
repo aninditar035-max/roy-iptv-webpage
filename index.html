@@ -296,14 +296,21 @@
             };
             const displayCustomerDetails = (user) => {
                 const currentDate = new Date();
-                const expiryDate = new Date(user.validity);
+                let expiryDate;
+                try {
+                    expiryDate = new Date(user.validity || '');
+                } catch (e) {
+                    expiryDate = null;
+                }
                 
                 // Set hours to 0 to compare dates only, ignoring time
                 currentDate.setHours(0, 0, 0, 0);
-                expiryDate.setHours(0, 0, 0, 0);
-                const isExpired = expiryDate < currentDate;
+                if (expiryDate) expiryDate.setHours(0, 0, 0, 0);
+                
+                const isExpired = expiryDate && expiryDate < currentDate;
                 const expiryLabel = isExpired ? 'Expired' : 'Expiry';
-                const validityDisplay = user.validity || 'N/A';  // Fallback to 'N/A' if undefined
+                const validityDisplay = user.validity && user.validity.trim() !== '' ? user.validity : 'N/A';
+                
                 customerDetailsContent.innerHTML = `
                     <p><strong>Name:</strong> ${user.name || 'N/A'}</p>
                     <p><strong>Plan:</strong> ${user.plan || 'N/A'}</p>
@@ -313,20 +320,28 @@
                 customerDetailsModal.classList.remove('hidden');
             };
             const parseCSV = (text) => {
-                const lines = text.trim().split('\n');
-                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());  // Normalize headers to lowercase
-                return lines.slice(1).map(line => {
+                const lines = text.trim().split(/\r?\n/); // Handle different line endings
+                if (lines.length === 0) return [];
+                
+                const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+                const data = lines.slice(1).map(line => {
                     const values = line.split(',').map(v => v.trim());
                     let entry = {};
                     headers.forEach((header, index) => {
-                        entry[header] = values[index];
+                        if (index < values.length) {
+                            entry[header] = values[index];
+                        } else {
+                            entry[header] = ''; // Handle missing values
+                        }
                     });
-                    // Map possible variations of 'validity' header
-                    if (entry['validity date']) entry.validity = entry['validity date'];
-                    else if (entry['expiry']) entry.validity = entry['expiry'];
-                    else if (entry['expiration']) entry.validity = entry['expiration'];
+                    // Map possible variations of keys
+                    entry.mobile = entry.mobile || entry['mobile number'] || entry.phone || '';
+                    entry.name = entry.name || entry['customer name'] || '';
+                    entry.plan = entry.plan || entry['subscription plan'] || '';
+                    entry.validity = entry.validity || entry['validity date'] || entry.expiry || entry['expiration date'] || entry['expiry date'] || '';
                     return entry;
                 });
+                return data;
             };
             continueBtn.addEventListener('click', searchForCustomer);
             mobileNumberInput.addEventListener('keydown', (e) => {
