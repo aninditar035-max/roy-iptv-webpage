@@ -272,8 +272,13 @@
                 continueBtn.textContent = 'Searching...';
                 loginErrorMessage.classList.add('hidden');
                 try {
+                    // Add cache-busting parameter to force fresh data
+                    const cacheBust = new Date().getTime();
+                    const urlWithCacheBust = `${GOOGLE_SHEET_URL}&_=${cacheBust}`;
                     // Using a more reliable CORS proxy to prevent cross-origin errors.
-                    const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(GOOGLE_SHEET_URL)}`);
+                    const response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(urlWithCacheBust)}`, {
+                        cache: 'no-cache' // Prevent browser caching
+                    });
                     if (!response.ok) throw new Error('Network response was not ok.');
                     
                     const csvText = await response.text();
